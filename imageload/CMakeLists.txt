@@ -37,7 +37,7 @@ link_directories("/usr/local/lib/")
 
 add_executable(${IMAGELOAD_BIN_NAME} ${IMAGELOAD_SRC_FILES})
 
-target_link_libraries(${IMAGELOAD_BIN_NAME} opencv_core opencv_highgui opencv_features2d opencv_flann opencv_highgui opencv_imgcodecs)
+target_link_libraries(${IMAGELOAD_BIN_NAME} opencv_core opencv_highgui opencv_features2d opencv_flann opencv_highgui opencv_imgcodecs opencv_imgproc)
 
 
 

@@ -9,6 +9,7 @@
    
 #include<opencv2/core/core.hpp>  
 #include<opencv2/highgui/highgui.hpp>  
+#include<opencv2/imgproc/imgproc.hpp>
 #include<unistd.h>  
 #include<iostream>
 #include<string>
@@ -20,6 +21,8 @@ void LoadImage();
 bool ROI_AddImage();
 bool LinearBlending();
 bool ROI_LinearBlending();
+bool MultiChannelBlending();
+bool Track_bar_display();
 
 string all_command[] = {
 	"End Test",
@@ -27,7 +30,9 @@ string all_command[] = {
 	"Load Image",
 	"ROI_AddImage",
 	"LinearBlending",
-	"ROI_LinearBlending"
+	"ROI_LinearBlending",
+	"MultiChannelBlending",
+	"Track_bar_display"
 };
 
 void Help(string param[], int size)
@@ -63,6 +68,17 @@ int main( )
 		else if (all_command[select] == "ROI_LinearBlending")
 		{
 			ROI_LinearBlending();
+		}
+		else if (all_command[select] == "MultiChannelBlending")
+		{
+		   if(MultiChannelBlending())  
+		   {  
+				  cout<<endl<<"嗯。好了，得出了你需要的混合值图像~";  
+		   }  
+		}
+		else if (all_command[select] == "Track_bar_display")
+		{
+			Track_bar_display();
 		}
 		waitKey(0);  
    	}
@@ -217,3 +233,164 @@ bool ROI_LinearBlending()
         
        return true;  
 } 
+
+
+//-----------------------------【MultiChannelBlending( )函数】--------------------------------  
+//     描述：多通道混合的实现函数  
+//-----------------------------------------------------------------------------------------------  
+bool MultiChannelBlending()  
+{  
+       //【0】定义相关变量  
+       Mat srcImage;  
+       Mat logoImage;  
+       vector<Mat>channels;  
+       Mat  imageBlueChannel;  
+   
+       //=================【蓝色通道部分】=================  
+       //     描述：多通道混合-蓝色分量部分  
+       //============================================  
+   
+       //【1】读入图片  
+       logoImage=imread("/work/cv/basesample/CVSample/imageload/image/dota_logo.jpg",0);  
+       srcImage=imread("/work/cv/basesample/CVSample/imageload/image/dota.jpg");  
+   
+       if(!logoImage.data ) { printf("Oh，no，读取logoImage错误~！\n"); return false; }  
+       if(!srcImage.data ) { printf("Oh，no，读取srcImage错误~！\n"); return false; }  
+   
+       //【2】把一个3通道图像转换成3个单通道图像  
+       split(srcImage,channels);//分离色彩通道  
+   
+       //【3】将原图的蓝色通道引用返回给imageBlueChannel，注意是引用，相当于两者等价，修改其中一个另一个跟着变  
+       imageBlueChannel=channels.at(0);  
+       //【4】将原图的蓝色通道的（500,250）坐标处右下方的一块区域和logo图进行加权操作，将得到的混合结果存到imageBlueChannel中  
+       addWeighted(imageBlueChannel(Rect(500,250,logoImage.cols,logoImage.rows)),1.0,  
+              logoImage,0.5,0,imageBlueChannel(Rect(500,250,logoImage.cols,logoImage.rows)));  
+   
+       //【5】将三个单通道重新合并成一个三通道  
+       merge(channels,srcImage);  
+   
+       //【6】显示效果图  
+       namedWindow("<1>游戏原画+logo蓝色通道 by浅墨");  
+       imshow("<1>游戏原画+logo蓝色通道 by浅墨",srcImage);  
+   
+   
+       //=================【绿色通道部分】=================  
+       //     描述：多通道混合-绿色分量部分  
+       //============================================  
+   
+       //【0】定义相关变量  
+       Mat  imageGreenChannel;  
+   
+       //【1】重新读入图片  
+       logoImage=imread("/work/cv/basesample/CVSample/imageload/image/dota_logo.jpg",0);  
+       srcImage=imread("/work/cv/basesample/CVSample/imageload/image/dota.jpg");  
+   
+       if(!logoImage.data ) { printf("Oh，no，读取logoImage错误~！\n"); return false; }  
+       if(!srcImage.data ) { printf("Oh，no，读取srcImage错误~！\n"); return false; }  
+   
+       //【2】将一个三通道图像转换成三个单通道图像  
+       split(srcImage,channels);//分离色彩通道  
+   
+       //【3】将原图的绿色通道的引用返回给imageBlueChannel，注意是引用，相当于两者等价，修改其中一个另一个跟着变  
+       imageGreenChannel=channels.at(1);  
+       //【4】将原图的绿色通道的（500,250）坐标处右下方的一块区域和logo图进行加权操作，将得到的混合结果存到imageGreenChannel中  
+       addWeighted(imageGreenChannel(Rect(500,250,logoImage.cols,logoImage.rows)),1.0,  
+              logoImage,0.5,0.,imageGreenChannel(Rect(500,250,logoImage.cols,logoImage.rows)));  
+   
+       //【5】将三个独立的单通道重新合并成一个三通道  
+       merge(channels,srcImage);  
+   
+       //【6】显示效果图  
+       namedWindow("<2>游戏原画+logo绿色通道 by浅墨");  
+       imshow("<2>游戏原画+logo绿色通道 by浅墨",srcImage);  
+   
+   
+   
+       //=================【红色通道部分】=================  
+       //     描述：多通道混合-红色分量部分  
+       //============================================  
+        
+       //【0】定义相关变量  
+       Mat  imageRedChannel;  
+   
+       //【1】重新读入图片  
+       logoImage=imread("/work/cv/basesample/CVSample/imageload/image/dota_logo.jpg",0);  
+       srcImage=imread("/work/cv/basesample/CVSample/imageload/image/dota.jpg");  
+   
+       if(!logoImage.data ) { printf("Oh，no，读取logoImage错误~！\n"); return false; }  
+       if(!srcImage.data ) { printf("Oh，no，读取srcImage错误~！\n"); return false; }  
+   
+       //【2】将一个三通道图像转换成三个单通道图像  
+       split(srcImage,channels);//分离色彩通道  
+   
+       //【3】将原图的红色通道引用返回给imageBlueChannel，注意是引用，相当于两者等价，修改其中一个另一个跟着变  
+       imageRedChannel=channels.at(2);  
+       //【4】将原图的红色通道的（500,250）坐标处右下方的一块区域和logo图进行加权操作，将得到的混合结果存到imageRedChannel中  
+       addWeighted(imageRedChannel(Rect(500,250,logoImage.cols,logoImage.rows)),1.0,  
+              logoImage,0.5,0.,imageRedChannel(Rect(500,250,logoImage.cols,logoImage.rows)));  
+   
+       //【5】将三个独立的单通道重新合并成一个三通道  
+       merge(channels,srcImage);  
+   
+       //【6】显示效果图  
+       namedWindow("<3>游戏原画+logo红色通道 by浅墨");  
+       imshow("<3>游戏原画+logo红色通道 by浅墨",srcImage);  
+   
+       return true;  
+}  
+
+//-----------------------------------【全局函数声明部分】--------------------------------------  
+//  描述：全局函数声明  
+//-----------------------------------------------------------------------------------------------  
+Mat img;  
+int threshval = 160;            //轨迹条滑块对应的值，给初值160  
+
+//-----------------------------【on_trackbar( )函数】------------------------------------  
+//  描述：轨迹条的回调函数  
+//-----------------------------------------------------------------------------------------------  
+static void on_trackbar(int, void*)  
+{  
+    Mat bw = threshval < 128 ? (img < threshval) : (img > threshval);  
+  
+    //定义点和向量  
+    vector<vector<Point> > contours;  
+    vector<Vec4i> hierarchy;  
+  
+    //查找轮廓  
+    findContours( bw, contours, hierarchy, CV_RETR_CCOMP, CV_CHAIN_APPROX_SIMPLE );  
+    //初始化dst  
+    Mat dst = Mat::zeros(img.size(), CV_8UC3);  
+    //开始处理  
+    if( !contours.empty() && !hierarchy.empty() )  
+    {  
+        //遍历所有顶层轮廓，随机生成颜色值绘制给各连接组成部分  
+        int idx = 0;  
+        for( ; idx >= 0; idx = hierarchy[idx][0] )  
+        {  
+            Scalar color( (rand()&255), (rand()&255), (rand()&255) );  
+            //绘制填充轮廓  
+            drawContours( dst, contours, idx, color, CV_FILLED, 8, hierarchy );  
+        }  
+    }  
+    //显示窗口  
+    imshow( "Connected Components", dst );  
+}  
+
+bool Track_bar_display()
+{
+    system("color 5F");    
+    //载入图片  
+    img = imread("/work/cv/basesample/CVSample/imageload/image/girl2.jpg", 0);  
+    if( !img.data ) { printf("Oh，no，读取img图片文件错误~！ \n"); return -1; }  
+  
+    //显示原图  
+    namedWindow( "Image", 1 );  
+    imshow( "Image", img );  
+  
+    //创建处理窗口  
+    namedWindow( "Connected Components", 1 );  
+    //创建轨迹条  
+    createTrackbar( "Threshold", "Connected Components", &threshval, 255, on_trackbar );  
+    on_trackbar(threshval, 0);//轨迹条回调函数  
+	return 0;
+}
